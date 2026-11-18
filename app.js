@@ -46,7 +46,20 @@ async function loadDailyScanner(){
       el.appendChild(details);
       const note=document.createElement('small');note.textContent='Not a buy instruction. Re-check live BoB eTrade price, liquidity and corporate actions before deciding.';el.appendChild(note);
       const btn=document.createElement('button');btn.className='secondary';btn.textContent='Fill paper ticket';btn.style.marginTop='10px';
-      btn.onclick=()=>{$('buySymbol').value=r.symbol;$('buyPrice').value=r.close;$('buyQty').value=Math.min(r.quantity,Math.floor(state.cash/r.close));$('buyMsg').textContent='Paper ticket filled from a dated research snapshot. Check price manually; no real order.';};
+      btn.onclick=()=>{
+        const qty=Math.min(r.quantity,Math.floor(state.cash/r.close));
+        $('buySymbol').value=r.symbol;
+        $('buyPrice').value=Number(r.close).toFixed(2);
+        $('buyQty').value=qty;
+        $('buyMsg').textContent=qty>0
+          ? 'Paper ticket filled for '+r.symbol+'. Review details below, then press Record Paper Buy if you want to simulate a trade. No real order.'
+          : 'Insufficient paper cash for this symbol. No simulated order placed.';
+        const ticket=$('buySymbol').closest('.card');
+        ticket.style.outline='2px solid #61d6aa';
+        ticket.style.outlineOffset='3px';
+        ticket.scrollIntoView({behavior:'smooth',block:'start'});
+        setTimeout(()=>{ticket.style.outline='';ticket.style.outlineOffset='';},4000);
+      };
       el.appendChild(document.createElement('br'));el.appendChild(btn);cards.appendChild(el);
     }
   }catch(err){status.textContent='Scanner unavailable: '+err.message+' Existing CSV analysis and paper trade features still work.';cards.textContent='';}
